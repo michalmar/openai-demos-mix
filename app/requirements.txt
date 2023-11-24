@@ -1,0 +1,9 @@
+python-dotenv
+streamlit
+streamlit-authenticator
+streamlit-chat
+langchain
+openai
+tiktoken
+markdownify
+faiss-cpu
