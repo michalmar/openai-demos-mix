@@ -28,7 +28,7 @@ if "info" not in st.session_state:
 st.set_page_config(layout="wide")
 st.title("LinkedIn Copilot Demo")
 st.caption(f"powered by Azure OpenAI's {MODEL} model")
-st.text_area("Enter your prompt", key="pitch", value="basic info")
+st.text_area("What would you like your LN post to be about?", key="pitch", value="some basic information about the company, product or service, etc.")
 # Accept user input
 if prompt := st.text_input("What you want to see? (ex. 'A cat made of pizza')"):
     if prompt:
