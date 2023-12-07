@@ -26,6 +26,8 @@ if "model" not in st.session_state:
     st.session_state.model = "gpt-35-turbo"
 if "temperature" not in st.session_state:
     st.session_state.temperature = 0.5
+if "max_tokens" not in st.session_state:
+    st.session_state.max_tokens = 200
 
 
 
@@ -40,6 +42,7 @@ with st.sidebar:
     st.caption("Settings")
     st.session_state.model = st.selectbox("Select a model", ["gpt-35-turbo", "gpt-35-turbo-16k","gpt-4", "gpt-4-turbo"])
     st.session_state.temperature = st.slider("Temperature", 0.0, 1.0, 0.5, 0.01)
+    st.session_state.max_tokens = st.slider("Max tokens", 10, 4000, 200, 5)
         
     st.text_area("Enter your SYSTEM message", key="system_custom_prompt", value=st.session_state.SYSTEM_PROMPT)
     if st.button("Apply & Clear Memory"):
@@ -87,6 +90,8 @@ if prompt := st.chat_input("What is up?"):
                 model = st.session_state.model ,
                 messages=st.session_state.messages,
                 stream=True,
+                temperature=st.session_state.temperature,
+                max_tokens=st.session_state.max_tokens,
             )
             
             for part in response:
