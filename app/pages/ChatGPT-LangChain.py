@@ -132,6 +132,9 @@ if "temperature" not in st.session_state:
 if "language" not in st.session_state:
     st.session_state.language = "English"
 
+if "max_tokens" not in st.session_state:
+    st.session_state.max_tokens = 500
+
 #################################################################################
 # App elements
 
@@ -141,6 +144,7 @@ with st.sidebar:
     st.caption("Settings")
     st.session_state.model = st.selectbox("Select a model", ["gpt-35-turbo", "gpt-35-turbo-16k","gpt-4", "gpt-4-turbo"])
     st.session_state.temperature = st.slider("Temperature", 0.0, 1.0, 0.5, 0.01)
+    st.session_state.max_tokens = st.slider("Max tokens", 100, 4000, 500, 5)
     st.session_state.language = st.selectbox("Select a language", ["English", "Spanish", "Czech"])
     
     if st.button("New Conversation"):
@@ -194,7 +198,7 @@ with st.container():
             # Display assistant response in chat message container
             with st.chat_message("assistant"):
                 stream_handler = StreamHandler(st.empty())
-                llm = AzureChatOpenAI(deployment_name=st.session_state.model, temperature=st.session_state.temperature, max_tokens=600, streaming=True, callbacks=[stream_handler])
+                llm = AzureChatOpenAI(deployment_name=st.session_state.model, temperature=st.session_state.temperature, max_tokens=st.session_state.max_tokens, streaming=True, callbacks=[stream_handler])
                 
                 # check if db is loaded - if so, use the qa_with_sources chain
                 if (st.session_state.db is not None):
