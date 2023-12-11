@@ -1,9 +1,9 @@
-python-dotenv
-streamlit
-streamlit-authenticator
-streamlit-chat
-langchain
-openai
-tiktoken
-markdownify
-faiss-cpu
+python-dotenv==1.0.0
+streamlit==1.28.2
+# streamlit-authenticator
+streamlit-chat==0.1.1
+langchain==0.0.337
+openai==1.3.2
+tiktoken==0.5.1
+markdownify==0.11.6
+faiss-cpu==1.7.4
