@@ -20,7 +20,7 @@ from langchain.chat_models import AzureChatOpenAI
 
 # from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 
 from langchain.chains import LLMChain
@@ -69,7 +69,14 @@ def process_file(file, chunk_size = 1000, chunk_overlap=100) -> str:
     # loader = TextLoader(file_path)
     # documents = loader.load()
     documents = [doc]
-    text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    # text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    text_splitter = RecursiveCharacterTextSplitter(
+        # Set a really small chunk size, just to show.
+        chunk_size = 2000,
+        chunk_overlap  = 200,
+        length_function = len,
+        is_separator_regex = False,
+        )
     docs = text_splitter.split_documents(documents)
 
     # embeddings = OpenAIEmbeddings()

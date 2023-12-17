@@ -69,10 +69,10 @@ def ask_gpt_with_sources(llm, QUESTION, session_id):
     vector_indexes = [generate_index()]
 
     ordered_results = get_search_results(QUESTION, vector_indexes, 
-                                            k=10,
+                                            k=6,
                                             reranker_threshold=0.1, #1
                                             vector_search=True, 
-                                            similarity_k=10,
+                                            similarity_k=6,
                                             #query_vector = embedder.embed_query(QUESTION)
                                             query_vector= []
                                             )
@@ -85,7 +85,7 @@ def ask_gpt_with_sources(llm, QUESTION, session_id):
         # top_docs.append(Document(page_content=value["chunk"], metadata={"source": location+os.environ['BLOB_SAS_TOKEN']}))
         top_docs.append(Document(page_content=value["chunk"], metadata={"source": value["name"]}))
             
-    # print("Number of chunks:",len(top_docs))
+        print("Number of chunks:",len(top_docs))
 
     chain_type = "stuff"
     
@@ -159,7 +159,7 @@ with st.sidebar:
     # with st.expander("Settings"):
     # add upload button
     uploaded_file = st.file_uploader("Upload a file to ground your answers", type=["txt", "md"])
-    if uploaded_file is not None:
+    if uploaded_file is not None and  (st.session_state.db is None):
         # store the uploaded file on disk
         msg = process_file(uploaded_file)
         st.warning(msg)
