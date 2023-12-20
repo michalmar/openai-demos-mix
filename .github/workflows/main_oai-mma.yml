@@ -31,7 +31,7 @@ jobs:
       with:
         push: true
         tags: oaimma.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_d7bc002c806f4fd6bdd954ee84cbafae }}/oimma-streamlit:${{ github.sha }}
-        file: ./Dockerfile
+        file: ./WebApp.Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
