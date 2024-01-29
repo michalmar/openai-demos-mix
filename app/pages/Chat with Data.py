@@ -4,6 +4,15 @@ import json
 # Note: DALL-E 3 requires version 1.0.0 of the openai-python library or later
 from openai import AzureOpenAI
 
+from jinja2 import Environment, FileSystemLoader
+from promptflow.connections import AzureOpenAIConnection
+from promptflow.connections import CognitiveSearchConnection
+
+from rag_utils.RetrieveDocuments import search
+from rag_utils.FormatRetrievedDocuments import format_retrieved_documents
+
+from rag_utils.convert_template import convert_jinja_to_messages
+
 from dotenv import load_dotenv
 if not load_dotenv("../credentials.env"):
     load_dotenv("credentials.env")
@@ -27,7 +36,7 @@ if "model" not in st.session_state:
 if "temperature" not in st.session_state:
     st.session_state.temperature = 0.5
 if "max_tokens" not in st.session_state:
-    st.session_state.max_tokens = 200
+    st.session_state.max_tokens = 600
 
 if "retreived_docs" not in st.session_state:
     st.session_state.retreived_docs = None
@@ -41,21 +50,21 @@ if "retreived_docs" not in st.session_state:
 st.set_page_config(layout="wide")
 st.title("ChatGPT Demo on Your data")
 st.warning("This demo uses the RAG model to chat with your data. Assuming the data has been **already** uploaded and indexed in Ai Search (setup previously).")
-st.caption(f'Currently using index: {os.environ["AZURE_SEARCH_INDEX"]} from Azure AI Search {os.environ["AZURE_SEARCH_ENDPOINT"]}')
+st.caption(f'Currently using index: **{os.environ["AZURE_SEARCH_INDEX"]}** from Azure AI Search {os.environ["AZURE_SEARCH_ENDPOINT"]}')
 
 with st.sidebar:
     st.caption("Settings")
     st.session_state.model = st.selectbox("Select a model", ["gpt-35-turbo", "gpt-35-turbo-16k","gpt-4", "gpt-4-turbo"])
     st.session_state.temperature = st.slider("Temperature", 0.0, 1.0, 0.5, 0.01)
-    st.session_state.max_tokens = st.slider("Max tokens", 10, 4000, 200, 5)
+    # st.session_state.max_tokens = st.slider("Max tokens", 100, 4000, 600, 50)
         
-    st.text_area("Enter your SYSTEM message", key="system_custom_prompt", value=st.session_state.SYSTEM_PROMPT)
-    if st.button("Apply & Clear Memory"):
-        # save the text from the text_area to SYSTEM_PROMPT
-        st.session_state.SYSTEM_PROMPT = st.session_state.system_custom_prompt
-        st.session_state.messages = [
-                        {"role": "system", "content": st.session_state.SYSTEM_PROMPT},
-                    ]
+    # st.text_area("Enter your SYSTEM message", key="system_custom_prompt", value=st.session_state.SYSTEM_PROMPT)
+    # if st.button("Apply & Clear Memory"):
+    #     # save the text from the text_area to SYSTEM_PROMPT
+    #     st.session_state.SYSTEM_PROMPT = st.session_state.system_custom_prompt
+    #     st.session_state.messages = [
+    #                     {"role": "system", "content": st.session_state.SYSTEM_PROMPT},
+    #                 ]
     st.caption("Refresh the page to reset to default settings")
 
     
@@ -63,23 +72,13 @@ with st.sidebar:
 # st.caption(f"powered by Azure OpenAI's {st.session_state.model} model")
 # st.caption(f"powered by Azure OpenAI's {MODEL} model")
 
-import os
-
-
-from jinja2 import Environment, FileSystemLoader
-from promptflow.connections import AzureOpenAIConnection
-from promptflow.connections import CognitiveSearchConnection
-
-from rag_utils.RetrieveDocuments import search
-from rag_utils.FormatRetrievedDocuments import format_retrieved_documents
-
-from rag_utils.convert_template import convert_jinja_to_messages
 
 search_index_name = os.environ["AZURE_SEARCH_INDEX"]; # Add your Azure AI Search index name here
 search_conn = CognitiveSearchConnection(api_key=os.environ["AZURE_SEARCH_KEY"], api_base=os.environ["AZURE_SEARCH_ENDPOINT"])
 embedding_model = "text-embedding-ada-002"
 embedding_conn = AzureOpenAIConnection(api_base=os.environ["AZURE_OPENAI_ENDPOINT"], api_key=os.environ["AZURE_OPENAI_API_KEY"])
 
+# performs search over documents and returns top X results
 def do_rag(query):
     ret = search(queries = query, 
         searchConnection =  search_conn, 
@@ -94,11 +93,15 @@ def do_rag(query):
     return ret
 
 
+def get_last_user_question():
+    for message in reversed(st.session_state.messages):
+        if message["role"] == "user":
+            return message["content"]
+    return None
 
+from rag_utils.ExtractIntent import extract_intent
 
-
-
-
+# display chat messages
 for message in st.session_state.messages:
     if message["role"] == "system":
         pass
@@ -122,11 +125,47 @@ if prompt := st.chat_input("What is up?"):
             full_response = ""
 
             message_placeholder.markdown("Formulating query...")
+            
+            # extract intent from user input
+            # environment = Environment(loader=FileSystemLoader("./"))
+            # template = environment.get_template(os.path.join("rag_utils","DetermineIntent.jinja2"))
+            # context = {
+            #     "query": prompt,
+            #     "chat_history": None
+            # }
+            # jinja_prompt_template = template.render(context)
+
+            # # print the prompt preserving the newlines on standard output
+            # for x in jinja_prompt_template.split("\n"):
+            #     print(x)
+
+
+            # msgs = convert_jinja_to_messages(jinja_prompt_template)
+
+            # client = AzureOpenAI(
+            #     api_version="2023-05-15",
+            #     azure_endpoint=os.environ['AZURE_OPENAI_ENDPOINT'],
+            #     api_key=os.environ["AZURE_OPENAI_API_KEY"],
+            # ) 
+            
+            # response = client.chat.completions.create(
+            #     model = st.session_state.model ,
+            #     # messages=st.session_state.messages,
+            #     messages=msgs,
+            #     stream=False,
+            #     temperature=0,
+            #     max_tokens=50,
+            # )
+
+            # retrieved_intents = response.choices[0].message.content
+            # intent = extract_intent(retrieved_intents, prompt)
+
+
             doc_query = prompt
 
             message_placeholder.markdown("Retrieving documents...")
 
-            ret = do_rag(doc_query)
+            ret = do_rag(str(doc_query))
             RETRIEVAL_MAX_TOKENS = 50000
             
             message_placeholder.markdown("Formating documents...")
@@ -158,9 +197,9 @@ if prompt := st.chat_input("What is up?"):
 
             jinja_prompt_template = template.render(context)
 
-            # print the prompt preserving the newlines on standard output
-            for x in jinja_prompt_template.split("\n"):
-                print(x)
+            # # print the prompt preserving the newlines on standard output
+            # for x in jinja_prompt_template.split("\n"):
+            #     print(x)
 
 
             msgs = convert_jinja_to_messages(jinja_prompt_template)
