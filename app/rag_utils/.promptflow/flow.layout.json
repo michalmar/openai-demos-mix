@@ -6,8 +6,8 @@
       "index": -1
     },
     "outputs": {
-      "x": 1075,
-      "y": 980,
+      "x": 647.3057366077599,
+      "y": 952.1992849489747,
       "index": -1
     },
     "DetermineIntent": {
@@ -16,13 +16,13 @@
       "index": 0
     },
     "ExtractIntent": {
-      "x": 820,
-      "y": 310,
+      "x": 643.352072823817,
+      "y": 297.6534588746201,
       "index": 1
     },
     "RetrieveDocuments": {
-      "x": 820,
-      "y": 444,
+      "x": 605.4557506757121,
+      "y": 403.63436962681936,
       "index": 2
     },
     "FormatRetrievedDocuments": {
