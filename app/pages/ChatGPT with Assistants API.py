@@ -83,6 +83,12 @@ with st.sidebar:
     
 
 st.caption(f"powered by Azure OpenAI's {st.session_state.model} model")
+with st.expander("What is Assistants API?"):
+    st.markdown("Assistants API - new API for creating and managing AI assistants from OpenAI. Based on [Azure Doc Sample](https://learn.microsoft.com/en-us/azure/ai-services/openai/assistants-quickstart)")
+    st.caption("Azure OpenAI Assistants (Preview) allows you to create AI assistants tailored to your needs through custom instructions and augmented by advanced tools like code interpreter, retrieval, and custom functions.")
+
+
+st.caption("Currently, there is only Code Interpreter assitant - more to come...")
 st.caption(f"TRY: I need to solve the equation `3x + 11 = 14`. Can you help me?")
 
 for message in st.session_state.messages:
