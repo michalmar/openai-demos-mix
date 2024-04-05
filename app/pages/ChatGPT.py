@@ -4,6 +4,8 @@ import json
 # Note: DALL-E 3 requires version 1.0.0 of the openai-python library or later
 from openai import AzureOpenAI
 
+from prompts import PROMPTS_SYSTEM_LIST
+
 from dotenv import load_dotenv
 if not load_dotenv("../credentials.env"):
     load_dotenv("credentials.env")
@@ -42,9 +44,23 @@ with st.sidebar:
     st.caption("Settings")
     st.session_state.model = st.selectbox("Select a model", ["gpt-35-turbo", "gpt-35-turbo-16k","gpt-4", "gpt-4-turbo"])
     st.session_state.temperature = st.slider("Temperature", 0.0, 1.0, 0.5, 0.01)
-    st.session_state.max_tokens = st.slider("Max tokens", 10, 4000, 200, 5)
-        
+    st.session_state.max_tokens = st.slider("Max tokens", 10, 4000, 400, 5)
+
+    # Create a selectbox with the dictionary items
+    selected_option = st.selectbox(
+        'Select an option:',
+        list(PROMPTS_SYSTEM_LIST.keys())
+    )
+
+    # Get the value of the selected option
+    selected_value = PROMPTS_SYSTEM_LIST[selected_option]
+
+    st.session_state.SYSTEM_PROMPT = selected_value
+
+    # st.write(f"You selected {selected_option}, which corresponds to {selected_value}")
+
     st.text_area("Enter your SYSTEM message", key="system_custom_prompt", value=st.session_state.SYSTEM_PROMPT)
+
     if st.button("Apply & Clear Memory"):
         # save the text from the text_area to SYSTEM_PROMPT
         st.session_state.SYSTEM_PROMPT = st.session_state.system_custom_prompt
