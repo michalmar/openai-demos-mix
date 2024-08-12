@@ -1,0 +1,17 @@
+python-dotenv
+streamlit
+# streamlit-authenticator
+streamlit-chat
+langchain
+openai
+tiktoken
+markdownify
+faiss-cpu
+promptflow 
+promptflow-tools
+azure-mgmt-search
+azure-search-documents
+pymupdf4llm
+PyPDF2
+langchain-openai
+langchain_experimental
