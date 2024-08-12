@@ -23,7 +23,7 @@ if "messages" not in st.session_state:
                     {"role": "system", "content": st.session_state.SYSTEM_PROMPT},
                 ]
 if "model" not in st.session_state:
-    st.session_state.model = "gpt-x"
+    st.session_state.model = "gpt-4o"
 if "temperature" not in st.session_state:
     st.session_state.temperature = 0.5
 if "max_tokens" not in st.session_state:
@@ -91,14 +91,25 @@ if uploaded_file is not None:
         "Content-Type": "application/json",
         "api-key": os.environ["AZURE_OPENAI_API_KEY"],
     }
-    endpoint = f"{base_url}/chat/completions?api-version=2023-12-01-preview" 
+    endpoint = f"{base_url}/chat/completions?api-version=2024-02-15-preview" 
     data = { 
     "messages": [ 
         { "role": "system", "content": st.session_state.SYSTEM_PROMPT }, # Content can be a string, OR 
-        { "role": "user", "content": [       # It can be an array containing strings and images. 
-            prompt, 
-            { "image": base64_encoded_image }      # Images are represented like this. 
-            ] } 
+
+        { "role": "user",# It can be an array containing strings and images. 
+            "content": [
+            {
+            "type": "text",
+            "text": prompt
+            },
+            {
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:image/jpeg;base64,{base64_encoded_image}"
+            }
+            }
+        ]
+        }, 
         ], 
         "max_tokens": st.session_state.max_tokens  
     } 
