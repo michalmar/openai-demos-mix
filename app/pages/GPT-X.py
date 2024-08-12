@@ -35,7 +35,7 @@ if "max_tokens" not in st.session_state:
 # App elements
 
 
-st.title("GPT 4 Vision - GPT-X Demo")
+st.title("GPT 4 - Vision modality")
 
 with st.sidebar:
     st.caption("Car status")
