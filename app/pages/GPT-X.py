@@ -34,7 +34,7 @@ if "max_tokens" not in st.session_state:
 #################################################################################
 # App elements
 
-st.set_page_config(layout="wide")
+
 st.title("GPT 4 Vision - GPT-X Demo")
 
 with st.sidebar:

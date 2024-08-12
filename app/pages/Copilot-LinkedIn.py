@@ -25,7 +25,7 @@ if "info" not in st.session_state:
 #################################################################################
 # App elements
 
-st.set_page_config(layout="wide")
+
 st.title("LinkedIn Copilot Demo")
 st.caption(f"powered by Azure OpenAI's {MODEL} model")
 st.text_area("What would you like your LN post to be about?", key="pitch", value="some basic information about the company, product or service, etc.")

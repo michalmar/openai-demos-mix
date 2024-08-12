@@ -84,6 +84,11 @@ from azure.search.documents.indexes.models import (
 from tenacity import retry, wait_random_exponential, stop_after_attempt 
 
 from langchain.text_splitter import MarkdownTextSplitter, RecursiveCharacterTextSplitter, PythonCodeTextSplitter
+
+from langchain_experimental.text_splitter import SemanticChunker
+# # from langchain_openai.embeddings import OpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings
+
 import tiktoken
 
 import re

@@ -45,7 +45,6 @@ AZURE_OPENAI_MODEL_NAME_LIST = os.getenv("AZURE_OPENAI_MODEL_NAME_LIST").split("
 #################################################################################
 # App elements
 
-st.set_page_config(layout="wide")
 st.title("ChatGPT Demo")
 
 with st.sidebar:
@@ -61,7 +60,7 @@ with st.sidebar:
         with st.spinner("Uploading & chunking..."):
 
             if st.session_state.recreate_index:
-                res = doc_utils.create_index(recreate=True)
+                res = doc_utils.create_index(recreate=True, schema="app/schema.json")
                 status_placeholder.success(f"Index {res.name} re-created succesfully.")
 
             # st.write("File uploaded")

@@ -41,7 +41,7 @@ if "vehicle_features" not in st.session_state:
 #################################################################################
 
 
-st.set_page_config(layout="wide")
+
 st.title("ChatGPT Demo with Functions / Tools")
 
 with st.sidebar:

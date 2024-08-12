@@ -47,7 +47,7 @@ if "retreived_docs" not in st.session_state:
 #################################################################################
 # App elements
 
-st.set_page_config(layout="wide")
+
 st.title("ChatGPT Demo on Your data")
 st.warning("This demo uses the RAG model to chat with your data. Assuming the data has been **already** uploaded and indexed in Ai Search (setup previously).")
 st.caption(f'Currently using index: **{os.environ["AZURE_SEARCH_INDEX"]}** from Azure AI Search {os.environ["AZURE_SEARCH_ENDPOINT"]}')

@@ -37,12 +37,12 @@ if "max_tokens" not in st.session_state:
 #################################################################################
 # App elements
 
-st.set_page_config(layout="wide")
+# 
 st.title("ChatGPT Demo")
 
 with st.sidebar:
     st.caption("Settings")
-    st.session_state.model = st.selectbox("Select a model", ["gpt-35-turbo", "gpt-35-turbo-16k","gpt-4", "gpt-4-turbo"])
+    st.session_state.model = st.selectbox("Select a model", os.getenv("AZURE_OPENAI_MODEL_NAME_LIST").split(","))
     st.session_state.temperature = st.slider("Temperature", 0.0, 1.0, 0.5, 0.01)
     st.session_state.max_tokens = st.slider("Max tokens", 10, 4000, 400, 5)
 

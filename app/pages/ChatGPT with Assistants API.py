@@ -40,14 +40,36 @@ if "assistent_thread" not in st.session_state:
     st.session_state.client = client
 
     # Create an assistant
-    assistant = client.beta.assistants.create(
+    assistant_code = client.beta.assistants.create(
         name="Math Assist",
         instructions="You are an AI assistant that can write code to help answer math questions.",
         tools=[{"type": "code_interpreter"}],
         model=st.session_state.model #You must replace this value with the deployment name for your model.
     )
 
-    st.session_state.assistant = assistant
+    st.session_state.assistant_code = assistant_code
+
+    # # open file for reading
+    # with open("./upload/movies.csv", "r") as f:
+    #     st.markdown(f.read())
+
+
+    # Upload a file with an "assistants" purpose
+    st.session_state.file = client.files.create(
+        file=open("./upload/movies.csv", "rb"),
+        purpose='assistants'
+    )
+
+    # Create an assistant using the file ID
+    assistant_movies = client.beta.assistants.create(
+        instructions="You are a movie analyst. When asked a question, you will parse your CSV file to provide the requested analysis.",
+        name="Movie Analyst",
+        model=st.session_state.model,
+        tools=[{"type": "code_interpreter"}],
+        file_ids=[st.session_state.file.id]
+    )
+
+    st.session_state.assistant_movies = assistant_movies
 
     # Create a thread
     thread = client.beta.threads.create()
@@ -55,11 +77,10 @@ if "assistent_thread" not in st.session_state:
 
 
 
-
 #################################################################################
 # App elements
 
-st.set_page_config(layout="wide")
+
 st.title("ChatGPT with Assistants API")
 
 with st.sidebar:
@@ -114,7 +135,8 @@ if prompt := st.chat_input("I need to solve the equation `3x + 11 = 14`. Can you
             full_response = ""
 
             client = st.session_state.client
-            assistant = st.session_state.assistant
+            assistant_code = st.session_state.assistant_code
+            assistent_movies = st.session_state.assistant_movies
             thread = st.session_state.assistent_thread
 
             # Add a user question to the thread
@@ -126,7 +148,7 @@ if prompt := st.chat_input("I need to solve the equation `3x + 11 = 14`. Can you
             # Run the thread
             run = client.beta.threads.runs.create(
                 thread_id=thread.id,
-                assistant_id=assistant.id,
+                assistant_id=assistant_code.id,
             )
 
             # Retrieve the status of the run

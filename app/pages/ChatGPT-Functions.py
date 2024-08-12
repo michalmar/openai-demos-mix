@@ -129,7 +129,7 @@ available_functions = {
 #################################################################################
 # App elements
 
-st.set_page_config(layout="wide")
+
 st.title("ChatGPT Demo with Functions / Tools")
 st.text("You can try: Please, switch off the air conditioner and roll the windows down.")
 # vehicle_feature_aircondition = st.empty()

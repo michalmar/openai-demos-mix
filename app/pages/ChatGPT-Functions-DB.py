@@ -34,7 +34,7 @@ if "max_tokens" not in st.session_state:
 #################################################################################
 
 
-st.set_page_config(layout="wide")
+
 st.title("ChatGPT fetches data from Database")
 
 with st.sidebar:

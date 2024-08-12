@@ -25,7 +25,7 @@ if "info" not in st.session_state:
 #################################################################################
 # App elements
 
-st.set_page_config(layout="wide")
+
 st.title("DALL-E 3 Demo")
 st.caption(f"powered by Azure OpenAI's {MODEL} model")
 

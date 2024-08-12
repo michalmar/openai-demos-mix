@@ -6,24 +6,50 @@ if "info" not in st.session_state:
 #################################################################################
 # App elements
 
-st.set_page_config(layout="wide")
-st.title("Azure OpenAI Demos")
 
-# # read the README.md file and display as markdown
-# with open("readme.md", "r") as f:
-#     st.markdown(f.read())
 
-text = '''
-This is a demo showcase of using Azure OpenAI API in simple web app.
+home_page = st.Page("pages/new_home.py", title="Home", icon=":material/house:", default=True)
 
-Supported scenarios & APIs:
-- :star: [Chat with you Data in AI Search](./Chat_with_Data) Using existing index in AI Search to chat with your data
-- **NEW** :star: [Chat with Assistants API](./ChatGPT_with_Assistants_API) Using existing index in AI Search to chat with your data
-- :speech_balloon: [Chat](./ChatGPT) simple ChatGPT-like app where you can modify settings such as `Temperature`, `Model`, `System message`.
-- :file_folder: [Chat with file sources](./ChatGPT-LangChain) simple ChatGPT-like where you can add your own file (`.txt`, `.md`)
-- :frame_with_picture: [Dall-e V3.0](./Dall-e_3.0) simple image generation application using newest DALL-E 3.0 model
-- :eye: [GPT-4 Vision](./GPT-X) Showcase of GPT-4 Vision API
-- :telephone_receiver: [Functions Calling](./ChatGPT-Functions) simple showcase of Function Calling (plugins) from ChatGPT conversation
-'''
+# CHAT
+chat = st.Page("pages/ChatGPT.py", title="Chat", icon=":material/chat:")
 
-st.markdown(text)
+# SETTINGS
+settings = st.Page("pages/settings.py", title="Settings", icon=":material/settings:")
+
+
+# RAG
+rag = st.Page("pages/Chat with Data API.py", title="On your data", icon=":material/book:")
+
+# VISION
+vision = st.Page("pages/GPT-X.py", title="GPT-4 Vision", icon=":material/warning:")
+dalle = st.Page("pages/Dall-e 3.0.py", title="Dall-e 3.0", icon=":material/image:")
+
+
+# FUNCTIONS
+
+func_db = st.Page("pages/ChatGPT-Functions-DB.py", title="Search", icon=":material/extension:")
+func_weather = st.Page("pages/ChatGPT-Functions-Weather.py", title="History", icon=":material/extension:")
+func_functions = st.Page("pages/ChatGPT-Functions.py", title="Beta", icon=":material/extension:")
+
+
+
+
+delete_page = st.Page("pages/Dall-e 3.0.py", title="Delete entry", icon=":material/delete:")
+
+pg = st.navigation([home_page, chat, delete_page])
+
+pg = st.navigation(
+    {
+        "Home": [home_page],
+        "Chat": [chat, rag],
+        "Vision": [vision, dalle],
+        "Misc": [func_functions, settings],
+    }
+)
+
+
+
+st.set_page_config(page_title="Data manager", page_icon=":material/edit:")
+
+pg.run()
+
