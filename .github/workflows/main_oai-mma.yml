@@ -38,19 +38,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python version
-        uses: actions/setup-python@v3.0.0
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
+      # - name: Set up Python version
+      #   uses: actions/setup-python@v3.0.0
+      #   with:
+      #     python-version: ${{ env.PYTHON_VERSION }}
+      #     cache: 'pip'
 
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
+      # - name: Create and start virtual environment
+      #   run: |
+      #     python -m venv venv
+      #     source venv/bin/activate
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      # - name: Install dependencies
+      #   run: pip install -r requirements.txt
 
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
