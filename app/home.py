@@ -27,9 +27,9 @@ dalle = st.Page("pages/Dall-e 3.0.py", title="Dall-e 3.0", icon=":material/image
 
 # FUNCTIONS
 
-func_db = st.Page("pages/ChatGPT-Functions-DB.py", title="Search", icon=":material/extension:")
-func_weather = st.Page("pages/ChatGPT-Functions-Weather.py", title="History", icon=":material/extension:")
-func_functions = st.Page("pages/ChatGPT-Functions.py", title="Beta", icon=":material/extension:")
+func_db = st.Page("pages/ChatGPT-Functions-DB.py", title="Function Calling - Database   ", icon=":material/extension:")
+func_weather = st.Page("pages/ChatGPT-Functions-Weather.py", title="Function calling - Weather", icon=":material/extension:")
+func_functions = st.Page("pages/ChatGPT-Functions.py", title="Function Calling - Car", icon=":material/extension:")
 
 
 
@@ -49,7 +49,7 @@ pg = st.navigation(
 
 
 
-st.set_page_config(page_title="Data manager", page_icon=":material/edit:")
+st.set_page_config(page_title="Azure AI Demos", page_icon=":robot_face:")
 
 pg.run()
 
