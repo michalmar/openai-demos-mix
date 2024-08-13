@@ -927,6 +927,7 @@ def do_rag(messages: list
             , presence_penalty = 0  
             , stop = None
             , stream = False
+            , system_prompt = "You are AI Assistant."
             , verbose=False):
         
     # import os
@@ -987,7 +988,7 @@ def do_rag(messages: list
                         ]
                     },
                     "in_scope": True,
-                    "role_information": "",
+                    "role_information": system_prompt,
                     "filter": None,
                     "strictness": 3,
                     "top_n_documents": 5,

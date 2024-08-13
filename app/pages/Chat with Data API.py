@@ -142,7 +142,7 @@ if prompt := st.chat_input("What is up?"):
             #         temperature=st.session_state.temperature,
             #         max_tokens=st.session_state.max_tokens,
             #     )
-            response = doc_utils.do_rag(messages=st.session_state.messages, stream=True, deployment=st.session_state.model, temperature=st.session_state.temperature, max_tokens=st.session_state.max_tokens)
+            response = doc_utils.do_rag(messages=st.session_state.messages, stream=True, deployment=st.session_state.model, temperature=st.session_state.temperature, max_tokens=st.session_state.max_tokens, system_prompt=st.session_state.SYSTEM_PROMPT)
             
             for part in response:
                 full_response += part.choices[0].delta.content or ""
