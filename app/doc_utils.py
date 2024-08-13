@@ -120,6 +120,14 @@ supported_conversion_types = ['.pptx', '.ppt', '.docx', '.doc', '.xlsx', '.xls',
 image_path = 'images'
 markdown_path = 'markdown'
 
+
+embeddings = AzureOpenAIEmbeddings(
+    azure_endpoint=openai_embedding_api_base,
+    api_key=openai_embedding_api_key,
+    azure_deployment=openai_embedding_model,
+    openai_api_version=openai_embedding_api_version,
+)
+
 # Function to generate vectors for title and content fields, also used for query vectors
 max_attempts = 6
 max_backoff = 60
@@ -179,19 +187,38 @@ def chunk_data(text):
     WORDS_BREAKS = ['\n', '\t', '}', '{', ']', '[', ')', '(', ' ', ':', ';', ',']
     num_tokens = 1024 #500
     min_chunk_size = 10
-    token_overlap = 0
+    token_overlap = 128
 
-    splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(separators=SENTENCE_ENDINGS + WORDS_BREAKS,chunk_size=num_tokens, chunk_overlap=token_overlap)
+    # splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(separators=SENTENCE_ENDINGS + WORDS_BREAKS,chunk_size=num_tokens, chunk_overlap=token_overlap)
+    splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=num_tokens, chunk_overlap=token_overlap)
 
     return(splitter.split_text(text))
 
+def chunk_data_semantic(text):
+    text = clean_spaces_with_regex(text)
+    text_splitter = SemanticChunker(embeddings)
+
+    docs = text_splitter.split_text(text)
+    return docs
+
+
+# This is just a hack - different paths to file when locally or in Azure
+def find_schema_file(schema_file):
+    if os.path.exists(schema_file):
+        return schema_file
+    elif os.path.exists(os.path.join('app', schema_file)):
+        return os.path.join('app', schema_file)
+    elif os.path.exists(os.path.join('..', 'app', schema_file)):
+        return os.path.join('..', 'app', schema_file)
+    else:
+        return None
 
 def create_index(index_name=search_index_name, recreate=False, schema = "schema.json"):
     print('Creating Index:', index_name)
     dims = len(generate_embedding('That quick brown fox.'))
     print ('Dimensions in Embedding Model:', dims)
 
-    with open(schema, "r") as f_in:
+    with open(find_schema_file(schema), "r") as f_in:
         index_schema = json.loads(f_in.read())
         index_schema['name'] = index_name
         index_schema['vectorSearch']['vectorizers'][0]['azureOpenAIParameters']['resourceUri'] = openai_embedding_api_base
@@ -303,7 +330,7 @@ def check_file_type(file_path):
     else:
         return 'unknown'
     
-def process_and_upload_files(paths, num_pages):
+def process_and_upload_files(paths, num_pages, use_semantic_chunking=False):
     upload_batch_size = 10
     search_credential = AzureKeyCredential(search_key)
     client = SearchClient(search_endpoint, search_index_name, search_credential)
@@ -326,13 +353,13 @@ def process_and_upload_files(paths, num_pages):
             file_type = check_file_type(_path)
 
         if file_type == 'pdf':
-            docs = process_pdf(path, num_pages, filename)
+            docs = process_pdf(path, num_pages, filename, use_semantic_chunking)
         elif file_type == 'docx':
-            docs = process_docx(path, num_pages, filename)
+            docs = process_docx(path, num_pages, filename, use_semantic_chunking)
         elif file_type == 'pptx':
-            docs = process_pptx(path, num_pages, filename)
+            docs = process_pptx(path, num_pages, filename, use_semantic_chunking)
         elif file_type == 'txt':
-            docs = process_txt(path, num_pages, filename)
+            docs = process_txt(path, num_pages, filename, use_semantic_chunking)
         else:
             print(f"Unknown file type: {file_type}")
             _counter = 0
@@ -518,14 +545,14 @@ def process_image(file, markdown_out_dir):
 
     return file
   
-def process_docx(path, num_pages, filename):
+def process_docx(path, num_pages, filename, use_semantic_chunking=False):
     reset_local_dirs()
     out = convert_doc_to_pdf(path)
-    docs = process_pdf(out, num_pages, filename)
+    docs = process_pdf(out, num_pages, filename, use_semantic_chunking=use_semantic_chunking)
     reset_local_dirs()
     return docs
 
-def process_pptx(path, num_pages, filename):
+def process_pptx(path, num_pages, filename, use_semantic_chunking=False):
 
     reset_local_dirs()
     import concurrent.futures  
@@ -563,7 +590,7 @@ def process_pptx(path, num_pages, filename):
     for idx, file in enumerate(files):
         with open(file, 'r') as f:
             text = f.read()
-            docs += process_text_only(text, num_pages, filename, page_num=idx)
+            docs += process_text_only(text, num_pages, filename, page_num=idx, use_semantic_chunking=use_semantic_chunking)
     reset_local_dirs()
     return docs
 
@@ -576,15 +603,15 @@ def get_text_from_txt(path):
             text = file.read()
         return text
 
-def process_txt(path, num_pages, filename):
+def process_txt(path, num_pages, filename, use_semantic_chunking=False):
     text = get_text_from_txt(path)
-    return process_text_only(text, num_pages, filename)
+    return process_text_only(text, num_pages, filename, use_semantic_chunking=use_semantic_chunking)
 
-def process_pdf(path, num_pages, filename):
+def process_pdf(path, num_pages, filename, use_semantic_chunking=False):
     text = convert_pdf_to_md(path)
-    return process_text_only(text, num_pages, filename)
+    return process_text_only(text, num_pages, filename, use_semantic_chunking=use_semantic_chunking)
 
-def process_text_only(text, num_pages, filename, page_num=0):
+def process_text_only(text, num_pages, filename, page_num=0, use_semantic_chunking=False):
 
     docs = []
     counter = 0
@@ -601,8 +628,12 @@ def process_text_only(text, num_pages, filename, page_num=0):
         page_num = 0 # TODO: how to handle pages in MD text?
     else:
         page_num = page_num
-          
-    chunks = chunk_data(text)
+
+    if use_semantic_chunking:
+        chunks = chunk_data_semantic(text)
+    else:          
+        chunks = chunk_data(text)
+
     chunk_num = 0
     for chunk in chunks:
         chunk_num += 1
@@ -620,6 +651,11 @@ def process_text_only(text, num_pages, filename, page_num=0):
         public_url = df_file_metadata['publicurl'] + '#page=' + str(page_num) 
 
         v_contentVector = generate_embedding(d["content"])
+
+        # it may happen that semantic chunking returns None (too small chunk)
+        if v_contentVector == None:
+            print (f'Error generating vector for chunk {chunk_num} with content: {d["content"]}' )
+            continue
 
         docs.append(
         {

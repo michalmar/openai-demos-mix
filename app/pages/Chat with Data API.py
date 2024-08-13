@@ -53,21 +53,24 @@ with st.sidebar:
     # add check box to recreate the index
     st.checkbox("Recreate index", key="recreate_index")
 
+    # add checkbox to use Semantic chunking
+    st.checkbox("Use Semantic Chunking", key="use_semantic_chunking")
+
     # upload a file
     uploaded_file = st.file_uploader("Choose a file", type=["txt", "pdf", "docx", "pptx"], accept_multiple_files=True)
     status_placeholder = st.empty()
     if uploaded_file and not st.session_state.index_filled:
-        with st.spinner("Uploading & chunking..."):
+        with st.spinner(f"Uploading & chunking {'(semantically)' if st.session_state.use_semantic_chunking else ''}..."):
 
             if st.session_state.recreate_index:
-                res = doc_utils.create_index(recreate=True, schema="app/schema.json")
+                res = doc_utils.create_index(recreate=True)
                 status_placeholder.success(f"Index {res.name} re-created succesfully.")
 
             # st.write("File uploaded")
             # st.write(uploaded_file)
             # paths = [f["upload_url"] for f in uploaded_file]
             # st.write(paths)
-            num_docs, num_chunks = doc_utils.process_and_upload_files(uploaded_file, 10)
+            num_docs, num_chunks = doc_utils.process_and_upload_files(uploaded_file, 10, use_semantic_chunking=st.session_state.use_semantic_chunking)
             status_placeholder.success(f"uploaded: {num_docs} docs in {num_chunks} chunks")
             st.session_state.index_filled = True
 
