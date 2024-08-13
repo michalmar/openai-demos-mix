@@ -21,6 +21,14 @@ import doc_utils as doc_utils
 SYSTEM_DEFAULT_PROMPT = "Assistant is a large language model trained by OpenAI."
 
 
+
+# Store the initial value of the text area in session state if not already stored
+if "initial_system_prompt" not in st.session_state:
+    st.session_state.initial_system_prompt = PROMPTS_SYSTEM_LIST[list(PROMPTS_SYSTEM_LIST.keys())[0]]
+
+if "system_custom_prompt" not in st.session_state:
+    st.session_state.system_custom_prompt = st.session_state.initial_system_prompt
+
 if "info" not in st.session_state:
     st.session_state.info = None
 if "SYSTEM_PROMPT" not in st.session_state:
@@ -46,6 +54,10 @@ AZURE_OPENAI_MODEL_NAME_LIST = os.getenv("AZURE_OPENAI_MODEL_NAME_LIST").split("
 # App elements
 
 st.title("ChatGPT Demo")
+
+def update_prompt():
+    st.session_state.system_custom_prompt = PROMPTS_SYSTEM_LIST[st.session_state.selected_option]
+
 
 with st.sidebar:
     st.caption("Settings")
@@ -79,20 +91,13 @@ with st.sidebar:
     st.session_state.temperature = st.slider("Temperature", 0.0, 1.0, 0.5, 0.01)
     st.session_state.max_tokens = st.slider("Max tokens", 10, 4000, 400, 5)
 
-    # Create a selectbox with the dictionary items
-    selected_option = st.selectbox(
-        'Select an option:',
-        list(PROMPTS_SYSTEM_LIST.keys())
+
+    # Display the text area with the initial value
+    st.text_area(
+        "Enter your SYSTEM message", 
+        key="system_custom_prompt", 
+        value=st.session_state.initial_system_prompt
     )
-
-    # Get the value of the selected option
-    selected_value = PROMPTS_SYSTEM_LIST[selected_option]
-
-    st.session_state.SYSTEM_PROMPT = selected_value
-
-    # st.write(f"You selected {selected_option}, which corresponds to {selected_value}")
-
-    st.text_area("Enter your SYSTEM message", key="system_custom_prompt", value=st.session_state.SYSTEM_PROMPT)
 
     if st.button("Apply & Clear Memory"):
         # save the text from the text_area to SYSTEM_PROMPT

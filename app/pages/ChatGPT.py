@@ -16,6 +16,16 @@ if not load_dotenv("../credentials.env"):
 SYSTEM_DEFAULT_PROMPT = "Assistant is a large language model trained by OpenAI."
 
 
+
+
+
+# Store the initial value of the text area in session state if not already stored
+if "initial_system_prompt" not in st.session_state:
+    st.session_state.initial_system_prompt = PROMPTS_SYSTEM_LIST[list(PROMPTS_SYSTEM_LIST.keys())[0]]
+
+if "system_custom_prompt" not in st.session_state:
+    st.session_state.system_custom_prompt = st.session_state.initial_system_prompt
+
 if "info" not in st.session_state:
     st.session_state.info = None
 if "SYSTEM_PROMPT" not in st.session_state:
@@ -30,6 +40,9 @@ if "temperature" not in st.session_state:
     st.session_state.temperature = 0.5
 if "max_tokens" not in st.session_state:
     st.session_state.max_tokens = 200
+
+def update_prompt():
+    st.session_state.system_custom_prompt = PROMPTS_SYSTEM_LIST[st.session_state.selected_option]
 
 
 
@@ -49,17 +62,30 @@ with st.sidebar:
     # Create a selectbox with the dictionary items
     selected_option = st.selectbox(
         'Select an option:',
-        list(PROMPTS_SYSTEM_LIST.keys())
+        list(PROMPTS_SYSTEM_LIST.keys()),
+        key="selected_option",
+        on_change=update_prompt
     )
 
     # Get the value of the selected option
     selected_value = PROMPTS_SYSTEM_LIST[selected_option]
 
-    st.session_state.SYSTEM_PROMPT = selected_value
+    # st.session_state.SYSTEM_PROMPT = selected_value
 
     # st.write(f"You selected {selected_option}, which corresponds to {selected_value}")
 
-    st.text_area("Enter your SYSTEM message", key="system_custom_prompt", value=st.session_state.SYSTEM_PROMPT)
+    # Display the text area with the initial value
+    st.text_area(
+        "Enter your SYSTEM message", 
+        key="system_custom_prompt", 
+        value=st.session_state.initial_system_prompt
+    )
+
+    # Check if the text area value has been altered
+    if st.session_state.system_custom_prompt == PROMPTS_SYSTEM_LIST[selected_option]:
+        st.session_state.SYSTEM_PROMPT = PROMPTS_SYSTEM_LIST[selected_option]
+    else:
+        st.session_state.SYSTEM_PROMPT = st.session_state.system_custom_prompt
 
     if st.button("Apply & Clear Memory"):
         # save the text from the text_area to SYSTEM_PROMPT
