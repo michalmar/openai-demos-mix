@@ -31,6 +31,7 @@ func_db = st.Page("pages/ChatGPT-Functions-DB.py", title="Function Calling - Dat
 func_weather = st.Page("pages/ChatGPT-Functions-Weather.py", title="Function calling - Weather", icon=":material/extension:")
 func_functions = st.Page("pages/ChatGPT-Functions.py", title="Function Calling - Car", icon=":material/extension:")
 
+crawl_web = st.Page("pages/Crawl and Index Website.py", title="Crawl & Index Website", icon=":material/extension:")
 
 
 
@@ -43,7 +44,7 @@ pg = st.navigation(
         "Home": [home_page],
         "Chat": [chat, rag],
         "Vision": [vision, dalle],
-        "Misc": [func_functions, settings],
+        "Tools": [func_functions,crawl_web, settings,],
     }
 )
 

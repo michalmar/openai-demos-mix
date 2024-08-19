@@ -86,7 +86,7 @@ def do_rag(query):
         queryType = "vector", 
         topK = 3, 
         semanticConfiguration = None, 
-        vectorFields = "contentVector", 
+        vectorFields = "content_vector", 
         embeddingModelConnection = embedding_conn, 
         embeddingModelName = embedding_model)
     # st.session_state.retreived_docs = ret

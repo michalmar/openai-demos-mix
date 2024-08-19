@@ -138,7 +138,26 @@
       "synonymMaps": []
     },
     {
-      "name": "contentVector",
+      "name": "category",
+      "type": "Edm.String",
+      "searchable": true,
+      "filterable": true,
+      "retrievable": true,
+      "stored": true,
+      "sortable": true,
+      "facetable": true,
+      "key": false,
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "analyzer": null,
+      
+      "dimensions": null,
+      "vectorSearchProfile": null,
+      "vectorEncoding": null,
+      "synonymMaps": []
+    },
+    {
+      "name": "content_vector",
       "type": "Collection(Edm.Single)",
       "searchable": true,
       "filterable": false,
@@ -153,6 +172,44 @@
       
       "dimensions": 3072,
       "vectorSearchProfile": "myHnswProfile",
+      "vectorEncoding": null,
+      "synonymMaps": []
+    },
+    {
+      "name": "last_update",
+      "type": "Edm.DateTimeOffset",
+      "searchable": false,
+      "filterable": true,
+      "retrievable": true,
+      "stored": true,
+      "sortable": true,
+      "facetable": true,
+      "key": false,
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "analyzer": null,
+      
+      "dimensions": null,
+      "vectorSearchProfile": null,
+      "vectorEncoding": null,
+      "synonymMaps": []
+    },
+    {
+      "name": "index_date",
+      "type": "Edm.DateTimeOffset",
+      "searchable": false,
+      "filterable": true,
+      "retrievable": true,
+      "stored": true,
+      "sortable": true,
+      "facetable": true,
+      "key": false,
+      "indexAnalyzer": null,
+      "searchAnalyzer": null,
+      "analyzer": null,
+      
+      "dimensions": null,
+      "vectorSearchProfile": null,
       "vectorEncoding": null,
       "synonymMaps": []
     }

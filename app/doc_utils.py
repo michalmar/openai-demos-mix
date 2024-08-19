@@ -11,6 +11,7 @@ import json
 # import openai
 from openai import AzureOpenAI
 from openai import APIError
+import random
 
 # For LibreOffice Doc Conversion to PDF
 import subprocess  
@@ -127,6 +128,12 @@ embeddings = AzureOpenAIEmbeddings(
     azure_deployment=openai_embedding_model,
     openai_api_version=openai_embedding_api_version,
 )
+
+client = AzureOpenAI(
+        api_version=openai_api_version,
+        azure_endpoint=openai_api_base,
+        api_key = openai_api_key
+    )
 
 # Function to generate vectors for title and content fields, also used for query vectors
 max_attempts = 6
@@ -363,6 +370,7 @@ def process_and_upload_files(paths, num_pages, use_semantic_chunking=False):
         else:
             print(f"Unknown file type: {file_type}")
             _counter = 0
+            continue
 
         _counter = ingest_docs(docs, client)
         counter += _counter
@@ -676,7 +684,10 @@ def process_text_only(text, num_pages, filename, page_num=0, use_semantic_chunki
                 # "Event": d["Event"],
                 # "Quantity": d["Quantity"],
                 # "titleVector": v_titleVector,
-                "contentVector": v_contentVector
+                "category": random.choice(["news", "research", "blog"]),
+                "content_vector": v_contentVector,
+                "last_update": time.strftime("%Y-%m-%dT%H:%M:%S-00:00", time.localtime()),
+                "index_date": time.strftime("%Y-%m-%dT%H:%M:%S-00:00", time.localtime())
         }
         )
             
@@ -787,7 +798,7 @@ def process_and_upload_pdf_old(path, num_pages, client, filename, upload_batch_s
                     # "Event": d["Event"],
                     # "Quantity": d["Quantity"],
                     # "titleVector": v_titleVector,
-                    "contentVector": v_contentVector
+                    "content_vector": v_contentVector
             }
             )
             
@@ -892,7 +903,7 @@ def process_and_upload_pdf_old_old(paths, num_pages):
                         # "Event": d["Event"],
                         # "Quantity": d["Quantity"],
                         # "titleVector": v_titleVector,
-                        "contentVector": v_contentVector
+                        "content_vector": v_contentVector
                 }
                 )
                 
@@ -984,7 +995,7 @@ def do_rag(messages: list
                         "title_field": "title",
                         "url_field": "publicurl",
                         "vector_fields": [
-                            "contentVector"
+                            "content_vector"
                         ]
                     },
                     "in_scope": True,
@@ -1015,6 +1026,64 @@ def do_rag(messages: list
     return completion
 
 
+def extract_json(text):
+    """
+    Extracts a JSON object from a given text.
+
+    Parameters:
+    text (str): The text containing the JSON object.
+
+    Returns:
+    dict: The extracted JSON object.
+
+    Raises:
+    None
+
+    Example:
+    >>> text = '''
+    ... ```json
+    ... {
+    ...     "name": "John",
+    ...     "age": 30,
+    ...     "city": "New York"
+    ... }
+    ... ```
+    ... '''
+    >>> extract_json(text)
+    {'name': 'John', 'age': 30, 'city': 'New York'}
+    """
+    txt = re.match(r"(^```json)([^\S\r\n]*[a-z]*(?:\n(?!```$).*)*\n)(```)",  text, re.DOTALL | re.MULTILINE)
+    json_result = json.loads(txt.group(2))
+    return json_result
+
+def do_query(   messages: list         , openai_api_base = openai_api_base
+            , openai_api_version = openai_api_version
+            , openai_api_key = openai_api_key
+            , search_endpoint = search_endpoint
+            , search_key = search_key
+            , deployment = "gpt-4o"
+            , search_index_name = search_index_name
+            , max_tokens = 800
+            , temperature = 0
+            , top_p = 1
+            , frequency_penalty = 0
+            , presence_penalty = 0  
+            , stop = None
+            , stream = False
+            , system_prompt = "You are AI Assistant."
+            , verbose=False):
+    response = client.chat.completions.create(
+        model=deployment,
+        messages= messages,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        top_p=top_p,
+        frequency_penalty=frequency_penalty,
+        presence_penalty=presence_penalty,
+        stop=None,
+        stream=stream,
+    )
+    return response.choices[0].message.content
 
 if __name__ == "__main__":
     num_pages = 10

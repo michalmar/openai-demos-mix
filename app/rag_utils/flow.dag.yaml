@@ -71,7 +71,7 @@ nodes:
   inputs:
     searchConnection: cog-search-7hld7ffw2k7qg
     embeddingModelConnection: Default_AzureOpenAI
-    vectorFields: contentVector
+    vectorFields: content_vector
     embeddingModelName: None
     indexName: tm-idx1
     queries: ${ExtractIntent.output.search_intents}
