@@ -52,14 +52,51 @@ def get_text_from_url(url):
         print(f"An error occurred: {e}")
         return None, None
 
-def check_if_url_is_valid(url):
+def check_if_url_is_valid(url, base):
     # get main domain from the URL
+    is_valid = False
+    if base in url:
+        is_valid = True
+    else:
+        return False
+    
+    if url.endswith(".pdf"):
+        return False
+    if url.endswith(".jpg"):
+        return False
+    if url.endswith(".png"):
+        return False
+    if url.endswith(".jpeg"):
+        return False
+    if url.endswith(".gif"):
+        return False
+    if url.endswith(".svg"):
+        return False
+    if url.endswith(".doc"):
+        return False
+    if url.endswith(".docx"):
+        return False
+    if url.endswith(".xls"):
+        return False
+    if url.endswith(".xlsx"):
+        return False
+    if url.endswith(".ppt"):
+        return False
+    if url.endswith(".pptx"):
+        return False
+    if url.endswith(".zip"):
+        return False
+    
+
     
     # remove http:// or https://   
     _base = st.session_state['url'].replace("http://", "").replace("https://", "")
     _base = _base.split("/")[0]
     # TODO: Add more checks
-    return url.startswith(f'http://{_base}') or url.startswith(f'https://{_base}')
+
+    is_valid =  url.startswith(f'http://{_base}') or url.startswith(f'https://{_base}')
+
+    return is_valid
     
 
 def get_links_from_submenu(url, level = 0):
@@ -71,33 +108,52 @@ def get_links_from_submenu(url, level = 0):
         response = requests.get(url, headers=headers, verify=False)
         response.raise_for_status()  # Check if the request was successful
         soup = BeautifulSoup(response.content, 'html.parser')
+        # get all html content within the body tag
+        _html = soup.body
 
-        # st.write(soup)
-        _messages = [
-                    {"role": "system", "content": """You are an HTML and UX specialist. Your task is to locate page elements in HTML."""},
-                    {"role": "user", "content": f"""
-                Please locate main menu and left menu in the ## HTML PAGE ## below. Output just a menu item name and corresponding URL in JSON format.
-                ## HTML PAGE ##: 
-                {soup}
-                """},
+        links = []
+        # get base URL
+        try:
+            _base = str(soup.base.attrs["href"])
+            # get all a href links
+            _links = soup.find_all('a', href=True)
+            
+            for link in _links:
+                if check_if_url_is_valid(link['href'], _base):
+                    links.append(link['href'])
+        except:
+            pass
+
+        
+        # _html = str(_html)[0: len(str(_html)) if len(str(_html)) < 10000 else 10000]
+        # # st.write(soup)
+        # _messages = [
+        #             {"role": "system", "content": """You are an HTML and UX specialist. Your task is to locate page elements in HTML."""},
+        #             {"role": "user", "content": f"""
+        #         Please locate main menu and left menu in the ## HTML PAGE ## below. Output just a menu item name and corresponding URL in JSON format.
+        #         ## HTML PAGE ##: 
+        #         {_html}
+        #         """},
                    
-                ]
+        #         ]
         
 
-        res = doc_utils.do_query(messages=_messages, deployment="gpt-4o", temperature=0.2, max_tokens=3000)
+        # res = doc_utils.do_query(messages=_messages, deployment="gpt-4o", temperature=0.2, max_tokens=3000)
 
-        import json
-        res_json = doc_utils.extract_json(res)
-        #ads
+        # import json
+        # res_json = doc_utils.extract_json(res)
+        # #ads
 
-        # st.write(res_json)
-        links  = [ ]
-        for key in res_json:
-            # st.write(f"Key: {key}, Value: {res_json[key]}")
-            if isinstance(res_json[key], list):
-                for item in res_json[key]:
-                    if check_if_url_is_valid(item["url"]):
-                        links.append(item["url"])
+        
+
+        # # st.write(res_json)
+        # links  = [ ]
+        # for key in res_json:
+        #     # st.write(f"Key: {key}, Value: {res_json[key]}")
+        #     if isinstance(res_json[key], list):
+        #         for item in res_json[key]:
+        #             if check_if_url_is_valid(item["url"]):
+        #                 links.append(item["url"])
         return links
     except requests.RequestException as e:
         return f"An error occurred: {e}"
