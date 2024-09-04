@@ -31,5 +31,7 @@
         ".vscode{,/**}"
     ],
     "appService.defaultWebAppToDeploy": "/subscriptions/de281c5e-5d60-4fc1-b905-c91caf45e624/resourceGroups/rg-ai-openai/providers/Microsoft.Web/sites/ai-demos-mix",
-    "appService.deploySubpath": "."
+    "appService.deploySubpath": ".",
+    "python.terminal.activateEnvironment": true,
+    "prompty.currentModelConfiguration": "default"
 }

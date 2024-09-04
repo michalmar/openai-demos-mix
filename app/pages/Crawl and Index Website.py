@@ -67,7 +67,7 @@ def get_links_from_submenu(url, level = 0):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
     try:
-        print(f"requesting {url}")
+        st.write(f"requesting {url}")
         response = requests.get(url, headers=headers, verify=False)
         response.raise_for_status()  # Check if the request was successful
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -84,7 +84,7 @@ def get_links_from_submenu(url, level = 0):
                 ]
         
 
-        res = doc_utils.do_query(messages=_messages, deployment="gpt-4o", temperature=0.2, max_tokens=1000)
+        res = doc_utils.do_query(messages=_messages, deployment="gpt-4o", temperature=0.2, max_tokens=3000)
 
         import json
         res_json = doc_utils.extract_json(res)
@@ -148,8 +148,9 @@ else:
         # st.write(text)
 
         with st.spinner("Crawling the website..."):
-            # Get links from submenu and crawl submenus
-            all_links = crawl_submenus(st.session_state['url'], max_depth=3)
+            with st.expander("Crawled links", expanded=False):
+                # Get links from submenu and crawl submenus
+                all_links = crawl_submenus(st.session_state['url'], max_depth=3)
         # st.write(all_links)
         st.write(f"Parsing done - found {len(all_links)} links.")
 
@@ -176,7 +177,7 @@ else:
                     os.makedirs("output")
         
                 # remove spaces and special characters
-                safe_title = re.sub('\s+', ' ', title)
+                safe_title = re.sub('\\s+', ' ', title)
                 safe_title = safe_title.strip().replace(" ", "_").replace("/", "_").replace(":", "_")
         
                 with open(f"output/{safe_title}.txt", "w") as f:
