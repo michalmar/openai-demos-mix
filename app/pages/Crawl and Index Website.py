@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import os
 import re
 import urllib3
+import random
 
 st.title('Tool - crawl and index website as KB')
 
@@ -235,6 +236,9 @@ else:
                 # remove spaces and special characters
                 safe_title = re.sub('\\s+', ' ', title)
                 safe_title = safe_title.strip().replace(" ", "_").replace("/", "_").replace(":", "_")
+                # check length and if it is too long, truncate
+                if len(safe_title) > 60:
+                    safe_title = safe_title[:60]+random.randint(1000, 9999)
         
                 with open(f"output/{safe_title}.txt", "w") as f:
                     f.write(text)
