@@ -5,6 +5,7 @@ import os
 import re
 import urllib3
 import random
+import time
 
 st.title('Tool - crawl and index website as KB')
 
@@ -13,6 +14,46 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 import doc_utils as doc_utils
+
+all_pages = {}
+
+
+
+def get_menu_identifiers(url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+    try:
+        print(f"requesting TEXT {url}")
+        response = requests.get(url, headers=headers, verify=False)
+        response.raise_for_status()  # Check if the request was successful
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        _html = soup.body
+
+        # _html = str(_html)[0: len(str(_html)) if len(str(_html)) < 10000 else 10000]
+        # # st.write(soup)
+        _messages = [
+                    {"role": "system", "content": """You are an HTML and UX specialist. Your task is to locate page elements in HTML."""},
+                    {"role": "user", "content": f"""
+                    Please locate main menu and left menu in the ## HTML PAGE ## below. Output just a div identifier or class name as JSON with keys: main_menu and left_menu and values as respective identifiers or class names.
+
+                    ## HTML PAGE ##: 
+                    {_html}
+                    """},
+                    
+                ]
+            
+
+        res = doc_utils.do_query(messages=_messages, deployment="gpt-4o", temperature=0.2, max_tokens=3000)
+
+        import json
+        res_json = doc_utils.extract_json(res)
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
+    return res_json
 
 def get_text_from_url(url):
     headers = {
@@ -25,7 +66,7 @@ def get_text_from_url(url):
 
 
         # Extract the title
-        title = ''
+        title = 'unknown'
         if soup.title and soup.title.string:
             title = soup.title.string
         else:
@@ -40,15 +81,11 @@ def get_text_from_url(url):
 
 
 
-        content_div = soup.find('div', class_='contentWrap')
+        content_div = soup.find('div', class_='rightSide')
         if content_div:
             return title, content_div.get_text()
         else:
-            content_div = soup.find('div', class_='contentBox mainContentBox useTableStyle')
-            if content_div:
-                return title, content_div.get_text()
-            else:
-                return None, None
+            return None, None
     except requests.RequestException as e:
         print(f"An error occurred: {e}")
         return None, None
@@ -100,7 +137,8 @@ def check_if_url_is_valid(url, base):
     return is_valid
     
 
-def get_links_from_submenu(url, level = 0):
+def get_links_from_submenu(url, base, menu_identifiers = None, level = 0):
+    
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
@@ -109,22 +147,42 @@ def get_links_from_submenu(url, level = 0):
         response = requests.get(url, headers=headers, verify=False)
         response.raise_for_status()  # Check if the request was successful
         soup = BeautifulSoup(response.content, 'html.parser')
+
         # get all html content within the body tag
         _html = soup.body
+        _base = base
 
         links = []
-        # get base URL
-        try:
-            _base = str(soup.base.attrs["href"])
-            # get all a href links
-            _links = soup.find_all('a', href=True)
-            
-            for link in _links:
-                if check_if_url_is_valid(link['href'], _base):
-                    links.append(link['href'])
-        except:
-            pass
+        # menu_identifiers contains div classes or ids which where identified by LLM
+        if menu_identifiers is not None:
+            for k,menu_class_name  in menu_identifiers.items():
+                menu_soup = soup.find('div', class_=menu_class_name)
+                if menu_soup is None:
+                    menu_soup = soup.find('div', id=menu_class_name)
+                try:
+                    _links = menu_soup.find_all('a', href=True)
+                    for link in _links:
+                        if check_if_url_is_valid(link['href'], _base):
+                            links.append(link['href'])
+                            all_pages[link['href']] = _html.text
+                except:
+                    # not all pages has same menu structure
+                    pass
+        else:
+            # if the menu_identifiers are empty -> get all links in page instead
+            try:
+                # get all a href links
+                _links = soup.find_all('a', href=True)
+                
+                for link in _links:
+                    if check_if_url_is_valid(link['href'], _base):
+                        links.append(link['href'])
+                        all_pages[link['href']] = _html.text
+            except:
+                pass
 
+    
+        ## Getting links though LLM (not used now since i am getting all the links from identified structure)        
         
         # _html = str(_html)[0: len(str(_html)) if len(str(_html)) < 10000 else 10000]
         # # st.write(soup)
@@ -155,18 +213,21 @@ def get_links_from_submenu(url, level = 0):
         #         for item in res_json[key]:
         #             if check_if_url_is_valid(item["url"]):
         #                 links.append(item["url"])
+
+
+
         return links
     except requests.RequestException as e:
         return f"An error occurred: {e}"
 
-def crawl_submenus(url, depth=0, max_depth=3, visited=None):
+def crawl_submenus(url, base,  menu_identifiers, depth=0, max_depth=3, visited=None):
     if visited is None:
         visited = set()
     
     if depth > max_depth:
         return []
     
-    links = get_links_from_submenu(url)
+    links = get_links_from_submenu(url, base, menu_identifiers)
     if (not isinstance(links,list)):
         return []
     unique_links = set(links) - visited
@@ -177,7 +238,7 @@ def crawl_submenus(url, depth=0, max_depth=3, visited=None):
     # st.write(f"{'-' * depth} {url}")
     
     for link in unique_links:
-        all_links.extend(crawl_submenus(link, depth + 1, max_depth, visited))
+        all_links.extend(crawl_submenus(link, base, menu_identifiers, depth + 1, max_depth, visited))
     
     return all_links
 
@@ -188,12 +249,17 @@ if 'url' not in st.session_state:
     st.session_state['url'] = None
 if 'index_filled' not in st.session_state:
     st.session_state['index_filled'] = False
+if 'base' not in st.session_state:
+    st.session_state['base'] = None
 
 # Input text field for URL address
 if st.session_state.index_filled:
     st.write("Index already filled go to On Your Data.")
 else:
     url = st.text_input('Enter URL address', value=st.session_state['url'], key='url')
+    st.caption("URL is the address of the website you want to crawl. For example: https://www.example.com/some-page/subpage/etc")
+    base = st.text_input('Enter base URL address', value=st.session_state['base'], key='base')
+    st.caption("Base URL is the domain name of the website. For example: https://www.example.com to crawl only this domain.")
 
     if st.button('Submit') and st.session_state['url'] is not None:
         # st.session_state['url'] = url
@@ -204,13 +270,22 @@ else:
         # st.header(title)
         # st.write(text)
 
+        # extract menu identifiers
+        menu_identifiers = get_menu_identifiers(st.session_state['url'])
+        st.write(menu_identifiers)
+        
+
         with st.spinner("Crawling the website..."):
+            start_time = time.time()
             with st.expander("Crawled links", expanded=False):
                 # Get links from submenu and crawl submenus
-                all_links = crawl_submenus(st.session_state['url'], max_depth=3)
+                all_links = crawl_submenus(st.session_state['url'], st.session_state['base'],menu_identifiers, max_depth=3)
+            end_time = time.time()
         # st.write(all_links)
-        st.write(f"Parsing done - found {len(all_links)} links.")
+        elapsed_time = end_time - start_time
+        st.write(f"Parsing done - found {len(all_links)} links. completed in {elapsed_time:.2f} seconds")
 
+       
         with st.expander("Links"):
             for link in all_links:
                 st.write(link)
@@ -223,33 +298,57 @@ else:
 
         progress_bar = st.progress(0)
         total_links = len(all_links)
-        
-        paths = []
-        for idx, link in enumerate(all_links):
-            title, text = get_text_from_url(link)
-            if title is not None:
-                # st.header(title)
-                # save file to disk
-                if not os.path.exists("output"):
-                    os.makedirs("output")
-        
-                # remove spaces and special characters
-                safe_title = re.sub('\\s+', ' ', title)
-                safe_title = safe_title.strip().replace(" ", "_").replace("/", "_").replace(":", "_")
-                # check length and if it is too long, truncate
-                if len(safe_title) > 60:
-                    safe_title = safe_title[:60]+random.randint(1000, 9999)
-        
-                with open(f"output/{safe_title}.txt", "w") as f:
-                    f.write(text)
-                paths.append(f"output/{safe_title}.txt")
 
-                
-            else:
-                st.write(f"Error parsing {link}")
-        
-            # Update progress bar
+        if not os.path.exists("output"):
+            os.makedirs("output")
+        paths = []
+        idx = 0
+        for title, text in all_pages.items():
+            # st.write(f"URL: {title}") # URL
+            # st.write(f"Text: {text}")
+            
+            safe_title = re.sub('\\s+', ' ', title)
+            safe_title = safe_title.strip().replace(" ", "_").replace("/", "_").replace(":", "_")
+            safe_title = str(random.randint(10000, 99999)) + safe_title # sometimes title is not found
+            # check length and if it is too long, truncate
+            if len(safe_title) > 60:
+                safe_title = safe_title[:60]+str(random.randint(1000, 9999))
+    
+            with open(f"output/{safe_title}.txt", "w") as f:
+                f.write(text)
+            paths.append(f"output/{safe_title}.txt")
             progress_bar.progress((idx + 1) / total_links)
+            idx += 1
+
+        
+        # paths = []
+        # for idx, link in enumerate(all_links):
+        #     try:
+        #         title, text = get_text_from_url(link)
+        #         if title is not None:
+        #             # st.header(title)
+        #             # save file to disk
+            
+        #             # remove spaces and special characters
+        #             safe_title = re.sub('\\s+', ' ', title)
+        #             safe_title = safe_title.strip().replace(" ", "_").replace("/", "_").replace(":", "_")
+        #             safe_title = str(random.randint(10000, 99999)) + safe_title # sometimes title is not found
+        #             # check length and if it is too long, truncate
+        #             if len(safe_title) > 60:
+        #                 safe_title = safe_title[:60]+str(random.randint(1000, 9999))
+            
+        #             with open(f"output/{safe_title}.txt", "w") as f:
+        #                 f.write(text)
+        #             paths.append(f"output/{safe_title}.txt")
+
+                    
+        #         else:
+        #             st.write(f"Error parsing {link} - no title found")
+        #     except Exception as e:
+        #         st.write(f"Error parsing {link} - {e}")
+        #         pass
+        #     # Update progress bar
+        #     progress_bar.progress((idx + 1) / total_links)
 
         st.success(f"Downloaded {len(paths)} files.")
 
