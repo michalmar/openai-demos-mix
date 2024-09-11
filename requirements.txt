@@ -9,6 +9,7 @@ markdownify
 faiss-cpu
 promptflow 
 promptflow-tools
+promptflow-azure
 azure-mgmt-search
 azure-search-documents
 pymupdf4llm

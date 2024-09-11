@@ -19,6 +19,7 @@ settings = st.Page("pages/settings.py", title="Settings", icon=":material/settin
 
 # RAG
 rag = st.Page("pages/Chat with Data API.py", title="On your data", icon=":material/book:")
+rag_custom = st.Page("pages/Chat with Data Custom RAG.py", title="Custom RAG", icon=":material/book:")
 
 # VISION
 vision = st.Page("pages/GPT-X.py", title="GPT-4 Vision", icon=":material/warning:")
@@ -42,7 +43,7 @@ pg = st.navigation([home_page, chat, delete_page])
 pg = st.navigation(
     {
         "Home": [home_page],
-        "Chat": [chat, rag],
+        "Chat": [chat, rag, rag_custom],
         "Vision": [vision, dalle],
         "Tools": [func_functions,crawl_web, settings,],
     }
