@@ -34,6 +34,8 @@ I have a result from search engine for phrase "{{original_search_phrase}}" in my
 
 The leading question format should be formatted as list of options so I can use that to render a buttons in my application. Use more than just yes/no answer where possible.
 
+You must choose only options that are relevant to the search phrase.
+
 Begin with the qualifyig question right away.
 
 Result:
