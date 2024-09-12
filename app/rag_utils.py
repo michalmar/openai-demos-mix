@@ -1,5 +1,5 @@
 
-# %%
+
 import os
 import json
 from pathlib import Path
@@ -34,7 +34,7 @@ from azure.search.documents import SearchClient
 from azure.search.documents.models import VectorizedQuery
 
 from promptflow.core import Prompty, AzureOpenAIModelConfiguration
-from promptflow.tracing import trace
+from promptflow.tracing import start_trace, trace
 
 class ChatResponse(TypedDict):
     context: dict
@@ -145,11 +145,6 @@ def get_documents(search_query: str, num_docs=3):
 
     return context
 
-# %%
-# import copilot
-from IPython.display import Markdown
-from promptflow.tracing import start_trace, trace
-
 if __name__ == "__main__":
     start_trace()
 
@@ -164,28 +159,3 @@ if __name__ == "__main__":
 
     for doc in response["context"]:
         print(doc)
-
-# path_to_prompty = f"{Path(__file__).parent.absolute().as_posix()}/chat.prompty"
-# chatPrompty = Prompty.load(path_to_prompty, model={
-#     'configuration': model_config,
-#     'parameters': { 
-#         'max_tokens': 3000,
-#         'temperature': 0.2,
-#         'stream': False # always stream responses, consumers/clients should handle streamed response
-#     }
-# })
-# messages = chatPrompty.render()
-
-# messages = eval(messages)
-# messages.append({"role": "assistant", "content": full_response})
-
-
-# response = get_chat_response(chat_input="Where can I buy yellow ticket?", chat_history=messages)
-
-
-# full_response = ""
-# for part in response["reply"]:
-#     full_response += part or ""
-#     print(part, end="")
-
-

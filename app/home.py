@@ -34,6 +34,7 @@ func_functions = st.Page("pages/ChatGPT-Functions.py", title="Function Calling -
 
 crawl_web = st.Page("pages/Crawl and Index Website.py", title="Crawl & Index Website", icon=":material/extension:")
 
+search = st.Page("pages/Search assistant.py", title="Search assistant", icon=":material/search:")
 
 
 delete_page = st.Page("pages/Dall-e 3.0.py", title="Delete entry", icon=":material/delete:")
@@ -45,7 +46,7 @@ pg = st.navigation(
         "Home": [home_page],
         "Chat": [chat, rag, rag_custom],
         "Vision": [vision, dalle],
-        "Tools": [func_functions,crawl_web, settings,],
+        "Tools": [func_functions,crawl_web, settings,search,],
     }
 )
 
