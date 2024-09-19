@@ -86,6 +86,7 @@ if not st.session_state.search_phrase:
                         _docs.append({
                             "header": v["title"],
                             "description": v["content"],
+                            "url": v["url"],
                             # "id": k
                         })
                         _docs_string += f"Header: {v['title']}\nDescription: {v['content']}\n\n"
@@ -102,7 +103,7 @@ if not st.session_state.search_phrase:
                 # Display documents as a nice list with title and content
                 for doc in docs:
                     with st.container(border=True):
-                        st.markdown(f"[{doc['header']}](https://www.example.com)")
+                        st.markdown(f"[{doc['header']}]({doc['url']})")
                         st.caption(f"{doc['description']}")
 
         
