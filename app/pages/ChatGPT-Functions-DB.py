@@ -11,7 +11,7 @@ if not load_dotenv("../credentials.env"):
 # MODEL = os.environ['AZURE_OPENAI_MODEL_NAME']
 # MODEL = "gpt-35-turbo"
 
-SYSTEM_DEFAULT_PROMPT = "You are helpful AI assitant."
+SYSTEM_DEFAULT_PROMPT = "You are helpful AI assistant."
 
 
 if "info" not in st.session_state:
@@ -24,7 +24,7 @@ if "messages" not in st.session_state:
                 ]
 if "model" not in st.session_state:
     # st.session_state.model = "gpt-4-turbo"
-    st.session_state.model = "gpt-35-turbo"
+    st.session_state.model = "gpt-4o"
 if "temperature" not in st.session_state:
     st.session_state.temperature = 0.5
 if "max_tokens" not in st.session_state:
