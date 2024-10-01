@@ -46,7 +46,7 @@ pg = st.navigation(
         "Home": [home_page],
         "Chat": [chat, rag, rag_custom],
         "Vision": [vision, dalle],
-        "Tools": [func_functions,crawl_web, settings,search,],
+        "Tools": [func_db,crawl_web, settings,search,],
     }
 )
 
