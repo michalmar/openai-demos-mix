@@ -216,7 +216,13 @@
   ],
   "scoringProfiles": [],
   "corsOptions": null,
-  "suggesters": [],
+  "suggesters": [
+    {
+      "name": "sg",
+      "searchMode": "analyzingInfixMatching",
+      "sourceFields": ["title"]
+    }
+  ],
   "analyzers": [],
   "normalizers": [],
   "tokenizers": [],
