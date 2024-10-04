@@ -150,10 +150,12 @@ if prompt := st.chat_input("What is up?"):
             for doc in response["context"]:
                 # message_placeholder.write(doc) # TODO: format the doc to be more readable
                 for k,v in doc.items():
-                    message_placeholder.write(f"{k}")
+                    # icon of file
+                    
+                    message_placeholder.markdown(f"📄 {k} [ {v['title']}](http://www.example.com)")
                     # message_placeholder.write(f"Document {k}: {v['title']}")
                     # message_placeholder.write(f"Content: {v['content']}")
-                    message_placeholder.write(f"URL: {v['url']}")
+                    # message_placeholder.write(f"URL: {v['url']}")
 
                 
 
